@@ -121,9 +121,10 @@ function calc() {
 }
 
 function show(k) {
-  if (!CONFIGS[k]) k = ORDER[0];
+  if (!CONFIGS[k] && k !== 'medir') k = ORDER[0];
   cur = k;
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.k === k));
+  if (k === 'medir') return showMedir();
   $('app').innerHTML = template(CONFIGS[k]);
   $('fecha').value = new Date().toISOString().slice(0, 10);
   load();
@@ -141,10 +142,11 @@ function show(k) {
   });
 }
 
-$('tabs').innerHTML = ORDER.map(k => `<button type="button" role="tab" data-k="${k}">${CONFIGS[k].label}</button>`).join('');
+const TAB_ORDER = ['medir', ...ORDER];
+$('tabs').innerHTML = TAB_ORDER.map(k => `<button type="button" role="tab" data-k="${k}">${k === 'medir' ? 'Medir con pasos' : CONFIGS[k].label}</button>`).join('');
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (b) { history.replaceState(null, '', '#' + b.dataset.k); show(b.dataset.k); }
 });
-$('app').addEventListener('input', calc);
-show(location.hash.slice(1));
+$('app').addEventListener('input', () => cur === 'medir' ? calcMedir() : calc());
+show(location.hash.slice(1) || 'medir');
